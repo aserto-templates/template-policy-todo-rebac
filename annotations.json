@@ -1,0 +1,10 @@
+{
+    "$manifest": {
+        "org.opencontainers.image.vendor": "Aserto",
+        "org.opencontainers.image.authors": "Aserto",
+        "org.opencontainers.image.title": "policy-todo",
+        "org.opencontainers.image.description": "A policy Aserto's sample todo application.",
+        "org.opencontainers.image.source": "https://github.com/aserto-templates/template-policy-todo",
+        "org.openpolicyregistry.template.kind": "policy"
+    }
+}

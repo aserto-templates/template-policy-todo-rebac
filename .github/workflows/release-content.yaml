@@ -1,0 +1,65 @@
+name: release-content
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+    - '*'
+
+jobs:
+  release_content:
+    runs-on: ubuntu-latest
+    name: release-content
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Read config
+      id: config
+      uses: opcr-io/ga-yaml-parser@v0.1.1
+      with:
+        file: .github/config-content.yaml
+
+    - name: List Sver Tags
+      uses: aserto-dev/sver-action@v0.0.14
+      id: "sver"
+      with:
+        docker_image: ${{ steps.config.outputs.repo }}
+        docker_registry: ${{ steps.config.outputs.server }}
+        docker_username: ${{ steps.config.outputs.username }}
+        docker_password: ${{ secrets.ASERTO_CONTENT_PUSH_KEY }}
+
+    - name: Oras Login
+      id: "oras-login"
+      env:
+        USERNAME: ${{ steps.config.outputs.username }}
+        TOKEN:    ${{ secrets.ASERTO_CONTENT_PUSH_KEY }}
+        SERVER:   ${{ steps.config.outputs.server }}
+      run: |
+        oras login -u $USERNAME -p $TOKEN $SERVER
+
+    - name: Compress action step
+      id: "compress"
+      run: |
+        export ROOT_PATH=$PWD
+        cd content
+        tar -czvf $ROOT_PATH/bundle.tar.gz .
+        cd ..
+
+    - name: Oras Push
+      id: "oras-push"
+      env:
+        REPO:   ${{ steps.config.outputs.repo }}
+        SERVER: ${{ steps.config.outputs.server }}
+      run: |
+       while read -r tag; do
+          oras push "$SERVER/$REPO":$tag --annotation-file ./annotations.json bundle.tar.gz
+        done < <(echo "${{ steps.sver.outputs.version }}")
+
+    - name: Oras Logout
+      id: "oras-logout"
+      env:
+        SERVER: ${{ steps.config.outputs.server }}
+      run: oras logout $SERVER
