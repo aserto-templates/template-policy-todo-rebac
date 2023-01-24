@@ -1,4 +1,4 @@
-package todoApp.POST.todo
+package todoApp.POST.todos
 
 import input.user
 import future.keywords.in

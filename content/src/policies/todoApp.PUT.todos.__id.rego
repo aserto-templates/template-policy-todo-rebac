@@ -1,4 +1,4 @@
-package todoApp.PUT.todo.__ownerID
+package todoApp.PUT.todos.__id
 
 import input.user
 import input.resource
